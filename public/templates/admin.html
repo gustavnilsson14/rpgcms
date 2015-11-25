@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Admin</title>
+        <link rel="stylesheet" href="/css/admin.css" media="screen" charset="utf-8">
+        <link rel="stylesheet" href="/css/select2.min.css" type="text/css">
+        <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript" src="../js/admin.js"></script>
+        <script type="text/javascript" src="../js/select2.full.min.js"></script>
+    </head>
+    <body>
+        {% set loader = page_data.get('loader') %}
+        {% for type, list in page_data.get('content').items() %}
+            {% set model = page_data.get('models')[type] %}
+            {% raw loader.load("public/templates/partials/adminform.html").generate(partial_data={'page_data':page_data,'model':model,'type':type,'list':list,'instance':0}) %}
+            <h3>{{ escape(model.display_name(True)) }}</h3>
+            {% for instance in list %}
+                {% block instance %}
+                    <h4>{{ escape( instance.name )}}</h4>
+                    <ul data-model="{{ escape(type) }}">
+                    {% for key, value in instance.fields(1).items() %}
+                        {% if key == 'type' %}
+                            <li name="{{ escape( key ) }}" value="{{ value }}">{{ escape(key[0].upper() + key[1:]) }}: {{ value }}</li>
+                        {% else %}
+                            <li style="display:none;" name="{{ escape( key ) }}" value="{{ value }}">{{ escape(key[0].upper() + key[1:]) }}: {{ value }}</li>
+                        {% end %}
+                    {% end %}
+                    </ul>
+                    {% if model.show_links() %}
+                        {% for link_type, link_list in page_data.get('content_links').items() %}
+                            {% if len(link_list) > 0 %}
+                                {% set link_model = link_list[0].__class__.get_link_model( model ) %}
+                                {% set related_links = instance.parse_related_links( model, link_model, link_list ) %}
+                                {% if len(related_links) > 0 %}
+                                    <h4>{{ escape( link_model.display_name() ) }} tillgängliga {{ escape( instance.name )}}</h4>
+                                    <ul>
+                                    {% for link in related_links %}
+                                        <li>{{ escape( getattr(link, model.__name__ + link_model.__name__ ).name )}}: {{ escape( link.value ) }}</li>
+                                    {% end %}
+                                    </ul>
+                                {% end %}
+                            {% end %}
+                        {% end %}
+                    {% end %}
+                    {% raw loader.load("public/templates/partials/adminform.html").generate(partial_data={'page_data':page_data,'model':model,'type':type,'list':list,'instance':instance}) %}
+                {% end %}
+                <button type="button" edit="{{ model.__name__ + '-' + str(instance.id) }}">EDIT</button>
+            {% end %}
+            <hr>
+        {% end %}
+    </body>
+</html>

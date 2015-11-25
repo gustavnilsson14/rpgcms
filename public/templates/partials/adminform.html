@@ -1,0 +1,136 @@
+{%set page_data = partial_data.get('page_data') %}
+{%set model = partial_data.get('model') %}
+{%set type = partial_data.get('type') %}
+{%set list = partial_data.get('list') %}
+{%set instance = partial_data.get('instance') %}
+
+<form action="/admin" method="post" data-model="{{ escape(type) }}"
+{% if instance != 0 %}
+    edit-instance="{{ model.__name__ + '-' + str(instance.id) }}"
+{% else %}
+    form-id="{{ escape( model.__name__ ) }}"
+{% end %}
+>
+    {% set title = "Skapa ny " + escape(model.display_name(False)) %}
+    {% if instance != 0 %}
+        {% set title = "Editera " + instance.name %}
+    {% end %}
+    <h2>{{ escape( title ) }}</h3>
+    <input type="hidden" name="model" value="{{ model.__name__ }}">
+    {% for field in model._meta.get_sorted_fields() %}
+        {% set element = model.get_element( field ) %}
+        <div class="fieldbox">
+        {% if element['key'] != 'id' %}
+            {% set field_value = "" %}
+            {% if instance != 0 %}
+                {% set field_value = getattr( instance, element['key'] ) %}
+            {% end %}
+            {% if element['element'] == 'input' %}
+                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <input id="{{ escape(element['key']) }}" type="text" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" value="{{ escape( field_value ) }}">
+            {% elif element['element'] == 'integer' %}
+                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <input id="{{ escape(element['key']) }}" type="number" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" value="{{ field_value }}">
+            {% elif element['element'] == 'map' %}
+                <div class="map" data-model="{{ escape(type) }}">
+                    <div class="city current">
+                        <img src="img/city.png" />
+                    </div>
+                </div>
+                <input id="{{ escape(element['key']) }}" type="hidden" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" mapx value="{{ field_value }}">
+            {% elif element['element'] == 'map_hidden' %}
+                <input id="{{ escape(element['key']) }}" type="hidden" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" mapy value="{{ field_value }}">
+            {% elif element['element'] == 'textarea' %}
+                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <textarea id="{{ escape(element['key']) }}" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}">{{ escape( field_value ) }}</textarea>
+            {% elif element['element'] == 'select' %}
+                {% set foreign_model = page_data.get('models')[element['key']] %}
+                <label for="{{ escape(element['key']) }}">{{ escape(foreign_model.display_name(False)) }}</label>
+                <select id="{{ escape(element['key']) }}" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}">
+                <option value="null">Välj</option>
+                {% for select_type, select_list in page_data.get('content').items() %}
+                    {% if select_type == element['key'] %}
+                        {% for option_instance in select_list %}
+                            {% set selected_option = "" %}
+                            {% if model.compare_selected(field_value, option_instance) %}
+                                {% set selected_option = "selected" %}
+                            {% end %}
+                            <option fv="{{field_value}}" value="{{option_instance.fields(1).get('id') }}" {{ escape( selected_option ) }}>{{ escape(option_instance.fields(1).get('name')) }}</option>
+                        {% end %}
+                    {% end %}
+                {% end %}
+                </select>
+            {% elif element['element'] == 'option' %}
+                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <select id="{{ escape(element['key']) }}" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}">
+                    {% set options = model.get_options(element['key']) %}
+                    {% if model.typeof(options) == 'list' %}
+                        {% set t = model.printmestatic(options) %}
+                        {% for option in options %}
+                            {% set selected_option = "" %}
+                            {% if field_value == option %}
+                                {% set selected_option = "selected" %}
+                            {% end %}
+                            <option value="{{ escape(option) }}" {{ escape( selected_option ) }}>{{ escape(option) }}</option>
+                        {% end %}
+                    {% elif model.typeof(options) == 'dict' %}
+                        {% set t = model.printmestatic(options) %}
+                        {% for option_category, option_list in options.items() %}
+                            <optgroup label="{{ escape( option_category ) }}">
+                                {% for option in option_list %}
+                                    {% set selected_option = "" %}
+                                    {% if field_value == option %}
+                                        {% set selected_option = "selected" %}
+                                    {% end %}
+                                    <option value="{{ escape(option) }}" {{ escape( selected_option ) }}>{{ escape(option) }}</option>
+                                {% end %}
+                            </optgroup>
+                        {% end %}
+                    {% end %}
+
+                </select>
+            {% end %}
+        {% else %}
+            <input id="id" type="hidden" name="id" {% if instance != 0 %}value="{{ instance.id }}"{% end %}>
+        {% end %}
+        </div>
+    {% end %}
+    {% if model.show_links() %}
+        {% for type, link in page_data.get('links').items() %}
+            {% if model in link.related_models() %}
+                <div class="fieldbox">
+                    {% set link_model = link.get_link_model( model ) %}
+                    <label for="link--{{ escape( link.__name__ ) }}--{{ escape( link_model.__name__ ) }}">{{ escape(link.display_name()) }}</label>
+                    <input type="hidden" name="link--{{ escape( link.__name__ ) }}--{{ escape( model.__name__ ) }}--origin" value="last_id">
+                    <div class="select2-field-container">
+                        {% set selected_links = [] %}
+                        {% if instance != 0 %}
+                            {% set selected_links = instance.get_links( link_model ) %}
+                        {% end %}
+                        <select id="link--{{ escape( link.__name__ ) }}--{{ escape( link_model.__name__ ) }}" name="link--{{ escape( link.__name__ ) }}--{{ escape( link_model.__name__ ) }}" multiple="true">
+                            {% for select_type, select_list in page_data.get('content').items() %}
+                                {% if select_type == link_model.__name__ %}
+                                    {% for option_instance in select_list %}
+                                        {% block option_instance %}
+                                            {% if model.filter_link_instance_by_type(option_instance) == True %}
+                                                {% set selected_option = "" %}
+                                                {% if option_instance.id in selected_links %}
+                                                    {% set selected_option = "selected" %}
+                                                {% end %}
+                                                <option value="{{option_instance.fields(1).get('id') }}" {{ escape( selected_option ) }}>{{ escape(option_instance.fields(1).get('name')) }}</option>
+                                            {% end %}
+                                        {% end %}
+                                    {% end %}
+                                {% end %}
+                            {% end %}
+                        </select>
+                    </div>
+                    <div class="link-values">
+
+                    </div>
+                </div>
+            {% end %}
+        {% end %}
+    {% end %}
+    <input type="submit" value="Submit">
+</form>

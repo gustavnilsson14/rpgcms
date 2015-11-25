@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+{% set model = page_data.get('model') %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>{{ escape( model.display_name() ) }}</title>
+        <script type="text/javascript" src="../js/admin.js">
+
+        </script>
+    </head>
+    <body>
+        <h3>{{ escape( model.display_name(False) ) }}</h3>
+        {% for instance in page_data.get('instances') %}
+            {% block instance %}
+                <ul>
+                {% for key, value in instance.fields(1).items() %}
+                    {% if key != 'id' %}
+                        <li>
+                        {% if model.is_foreign(model,key) %}
+                            {% set foreign = getattr( instance, key ) %}
+                            {% if foreign.available_for_user( page_data.get( 'handler') ) == True %}
+                                <a href="/article/{{ escape( key ) }}/{{ foreign.id }}">{{ escape(foreign.__class__.display_name(False)) }}: {{ foreign.name }}</a>
+                            {% else %}
+                                {{ escape(foreign.__class__.display_name(False)) }}: ?
+                            {% end %}
+                        {% else %}
+                            {{ escape( model.field_display_name( key ) ) }}: {{ value }}
+                        {% end %}
+                        </li>
+                    {% end %}
+                {% end %}
+                </ul>
+                {% for related in model.related_names() %}
+                <h3>{{ escape( related.get('model').display_name() ) }}</h3>
+                <ul>
+                    {% for related_instance in getattr(instance, related.get('reference')) %}
+                        {% block related_instance %}
+                            {% if related_instance.available_for_user( page_data.get( 'handler') ) == True %}
+                            <li>
+                                <a href="/article/{{ escape( related_instance.__class__.__name__ ) }}/{{ related_instance.id }}">
+                                {{ escape( escape( related_instance.name[0].upper() +  related_instance.name[1:]) ) }}
+                                </a>
+                            </li>
+                            {% end %}
+                        {% end %}
+                    {% end %}
+                {% end %}
+                </ul>
+            {% end %}
+            {% for link in page_data.get('links') %}
+                {% set link_model = link.get_link_model( model ) %}
+                {% if hasattr( instance, link_model.__name__ + model.__name__ ) %}
+                    {% set link_instances = getattr( instance, link_model.__name__ + model.__name__ ) %}
+                    {% if link_instances.count() > 0 %}
+                        <h4>{{ link_model.display_name() }}</h4>
+                        <ul>
+                        {% for link_instance in link_instances %}
+                            {% if hasattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                {% set linked_model_instance = getattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                {% if linked_model_instance.available_for_user( page_data.get( 'handler') ) == True %}
+                                <li>
+                                    <a href="/article/{{ escape( linked_model_instance.__class__.__name__ ) }}/{{ linked_model_instance.id }}">{{ linked_model_instance.name }}: {{ link_instance.value }}</a>
+                                </li>
+                                {% end %}
+                            {% end %}
+                        {% end %}
+                        </ul>
+                    {% end %}
+                {% end %}
+            {% end %}
+            <hr>
+        {% end %}
+    </body>
+</html>

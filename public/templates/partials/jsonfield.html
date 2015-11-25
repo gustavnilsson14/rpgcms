@@ -1,0 +1,18 @@
+{% set field = page_data.get('field') %}
+{% set model = page_data.get('model') %}
+{% if page_data.get('json') %}
+    <div id="{{ escape(model) }}-{{ escape(field) }}-json-template" class="json-entry hidden-template">
+    {% for key, type in page_data.get('json').items() %}
+        {% if type == 'string' %}
+            <label for="{{ escape(key) }}">{{ escape(key[0].upper() + key[1:]) }}</label>
+            <input id="{{ escape(key) }}" type="text" name="{{ escape(field + '_' + key) }}">
+        {% elif type == 'int' %}
+            <label for="{{ escape(key) }}">{{ escape(key[0].upper() + key[1:]) }}</label>
+            <input id="{{ escape(key) }}" type="number" name="{{ escape(field + '_' + key) }}">
+        {% end %}
+    {% end %}
+    </div>
+    <button class="add-json" template="{{ escape(model) }}-{{ escape(field) }}-json-template" type="button" name="button">Add new</button>
+{% else %}
+<input type="hidden" name="{{ field }}" value="">
+{% end %}
