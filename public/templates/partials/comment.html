@@ -1,0 +1,8 @@
+{% set model = partial_data.get('model') %}
+{% set instance = partial_data.get('instance') %}
+<div class="comment-new">
+    <h4>Lämna kommentar för {{ escape( instance.name ) }}</h4>
+    <form action="/article" method="post">
+
+    </form>
+</div>

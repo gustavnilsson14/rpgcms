@@ -25,12 +25,14 @@
             <br>
             <label for="money">Rikedom</label>
             <input type="number" name="money" value="{{ json.get('money') }}">
-            <h4>Kopparmynt</h4>
-            <span>{{ int(json.get('money')) % 100 }}</span>
-            <h4>Silvermynt</h4>
-            <span>{{ (int(json.get('money')) % 10000) / 100 }}</span>
-            <h4>Guldmynt</h4>
-            <span>{{ (int(json.get('money')) % 1000000) / 10000 }}</span>
+            {% if json.get('money') != None %}
+                <h4>Kopparmynt</h4>
+                <span>{{ int(json.get('money')) % 100 }}</span>
+                <h4>Silvermynt</h4>
+                <span>{{ (int(json.get('money')) % 10000) / 100 }}</span>
+                <h4>Guldmynt</h4>
+                <span>{{ (int(json.get('money')) % 1000000) / 10000 }}</span>
+            {% end %}
         </form>
     </body>
 </html>

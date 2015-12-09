@@ -46,45 +46,6 @@ class personMagic(MyLink) :
         return "Person kan magi"
 
 
-
-#ITEM LINKS
-class creatureItem(MyLink) :
-    creatureitem = peewee.ForeignKeyField(item, null=True, related_name='creatureitem')
-    itemcreature = peewee.ForeignKeyField(creature, null=True, related_name='itemcreature')
-
-    @staticmethod
-    def related_models() :
-        return [creature,item]
-
-    @staticmethod
-    def display_name(plural=True) :
-        return "Varelse har föremål"
-
-class placeItem(MyLink) :
-    placeitem = peewee.ForeignKeyField(place, null=True, related_name='placeitem')
-    itemplace = peewee.ForeignKeyField(item, null=True, related_name='itemplace')
-
-    @staticmethod
-    def related_models() :
-        return [place,item]
-
-    @staticmethod
-    def display_name(plural=True) :
-        return "Föremål finns tillgängligt på plats"
-
-class personItem(MyLink) :
-    personitem = peewee.ForeignKeyField(item, null=True, related_name='personitem')
-    itemperson = peewee.ForeignKeyField(person, null=True, related_name='itemperson')
-
-    @staticmethod
-    def related_models() :
-        return [person,item]
-
-    @staticmethod
-    def display_name(plural=True) :
-        return "Person har föremål"
-
-
 #INGREDIENT LINKS
 class creatureIngredient(MyLink) :
     creatureingredient = peewee.ForeignKeyField(ingredient, null=True, related_name='creatureingredient')
@@ -98,6 +59,18 @@ class creatureIngredient(MyLink) :
     def display_name(plural=True) :
         return "Varelse innehåller ingredienser"
 
+class alchemyIngredient(MyLink) :
+    alchemyingredient = peewee.ForeignKeyField(ingredient, null=True, related_name='alchemyingredient')
+    ingredientalchemy = peewee.ForeignKeyField(alchemy, null=True, related_name='ingredientalchemy')
+
+    @staticmethod
+    def related_models() :
+        return [alchemy,ingredient]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Produkt kan göras med följande ingredienser"
+
 class vegetationIngredient(MyLink) :
     vegetationingredient = peewee.ForeignKeyField(ingredient, null=True, related_name='vegetationingredient')
     ingredientvegetation = peewee.ForeignKeyField(vegetation, null=True, related_name='ingredientvegetation')
@@ -110,44 +83,8 @@ class vegetationIngredient(MyLink) :
     def display_name(plural=True) :
         return "Växt innehåller ingredienser"
 
-class itemIngredient(MyLink) :
-    itemingredient = peewee.ForeignKeyField(ingredient, null=True, related_name='itemingredient')
-    ingredientitem = peewee.ForeignKeyField(item, null=True, related_name='ingredientitem')
-
-    @staticmethod
-    def related_models() :
-        return [item,ingredient]
-
-    @staticmethod
-    def display_name(plural=True) :
-        return "Föremål består av ingredienser"
-
 
 #STAT LINKS
-class itemStat(MyLink) :
-    itemstat = peewee.ForeignKeyField(stat, null=True, related_name='itemstat')
-    statitem = peewee.ForeignKeyField(item, null=True, related_name='statitem')
-
-    @staticmethod
-    def related_models() :
-        return [item,stat]
-
-    @staticmethod
-    def display_name(plural=True) :
-        return "Föremål har värden"
-
-class ingredientStat(MyLink) :
-    ingredientstat = peewee.ForeignKeyField(stat, null=True, related_name='ingredientstat')
-    statingredient = peewee.ForeignKeyField(ingredient, null=True, related_name='statingredient')
-
-    @staticmethod
-    def related_models() :
-        return [ingredient,stat]
-
-    @staticmethod
-    def display_name(plural=True) :
-        return "Ingrediens har värden"
-
 class spellStat(MyLink) :
     spellstat = peewee.ForeignKeyField(stat, null=True, related_name='spellstat')
     statspell = peewee.ForeignKeyField(spell, null=True, related_name='statspell')
@@ -224,13 +161,13 @@ class placeKnowledge(MyLink) :
     def display_name(cls, plural=True) :
         return cls.related_models()[0].display_name(False) + " kräver kunskapen"
 
-class itemKnowledge(MyLink) :
-    itemknowledge = peewee.ForeignKeyField(knowledge, null=True, related_name='itemknowledge')
-    knowledgeitem = peewee.ForeignKeyField(item, null=True, related_name='knowledgeitem')
+class magictypeKnowledge(MyLink) :
+    magictypeknowledge = peewee.ForeignKeyField(knowledge, null=True, related_name='magictypeknowledge')
+    knowledgemagictype = peewee.ForeignKeyField(magictype, null=True, related_name='knowledgemagictype')
 
     @staticmethod
     def related_models() :
-        return [item,knowledge]
+        return [magictype,knowledge]
 
     @classmethod
     def display_name(cls, plural=True) :
@@ -307,3 +244,174 @@ class userKnowledge(MyLink) :
     @classmethod
     def display_name(cls, plural=True) :
         return cls.related_models()[0].display_name(False) + " har kunskapen"
+
+class bloodlineKnowledge(MyLink) :
+    bloodlineknowledge = peewee.ForeignKeyField(knowledge, null=True, related_name='bloodlineknowledge')
+    knowledgebloodline = peewee.ForeignKeyField(bloodline, null=True, related_name='knowledgebloodline')
+
+    @staticmethod
+    def related_models() :
+        return [bloodline,knowledge]
+
+    @classmethod
+    def display_name(cls, plural=True) :
+        return cls.related_models()[0].display_name(False) + " har kunskapen"
+
+
+class alchemyKnowledge(MyLink) :
+    alchemyknowledge = peewee.ForeignKeyField(knowledge, null=True, related_name='alchemyknowledge')
+    knowledgealchemy = peewee.ForeignKeyField(alchemy, null=True, related_name='knowledgealchemy')
+
+    @staticmethod
+    def related_models() :
+        return [alchemy,knowledge]
+
+    @classmethod
+    def display_name(cls, plural=True) :
+        return cls.related_models()[0].display_name(False) + " har kunskapen"
+
+
+#weapon LINKS
+class creatureWeapon(MyLink) :
+    creatureweapon = peewee.ForeignKeyField(weapon, null=True, related_name='creatureweapon')
+    weaponcreature = peewee.ForeignKeyField(creature, null=True, related_name='weaponcreature')
+
+    @staticmethod
+    def related_models() :
+        return [creature,weapon]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Varelse har vapen"
+
+class placeWeapon(MyLink) :
+    placeweapon = peewee.ForeignKeyField(weapon, null=True, related_name='placeweapon')
+    weaponplace = peewee.ForeignKeyField(place, null=True, related_name='weaponplace')
+
+    @staticmethod
+    def related_models() :
+        return [place,weapon]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Vapen finns tillgängligt på plats"
+
+class personWeapon(MyLink) :
+    personweapon = peewee.ForeignKeyField(weapon, null=True, related_name='personweapon')
+    weaponperson = peewee.ForeignKeyField(person, null=True, related_name='weaponperson')
+
+    @staticmethod
+    def related_models() :
+        return [person,weapon]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Person har vapen"
+
+class creatureArmor(MyLink) :
+    creaturearmor = peewee.ForeignKeyField(armor, null=True, related_name='creaturearmor')
+    armorcreature = peewee.ForeignKeyField(creature, null=True, related_name='armorcreature')
+
+    @staticmethod
+    def related_models() :
+        return [creature,armor]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Varelse har rustning"
+
+class placeArmor(MyLink) :
+    placearmor = peewee.ForeignKeyField(armor, null=True, related_name='placearmor')
+    armorplace = peewee.ForeignKeyField(place, null=True, related_name='armorplace')
+
+    @staticmethod
+    def related_models() :
+        return [place,armor]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Rustning finns tillgängligt på plats"
+
+class personArmor(MyLink) :
+    personarmor = peewee.ForeignKeyField(armor, null=True, related_name='personarmor')
+    armorperson = peewee.ForeignKeyField(person, null=True, related_name='armorperson')
+
+    @staticmethod
+    def related_models() :
+        return [person,armor]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Person har rustning"
+
+class creatureTool(MyLink) :
+    creaturetool = peewee.ForeignKeyField(tool, null=True, related_name='creaturetool')
+    toolcreature = peewee.ForeignKeyField(creature, null=True, related_name='toolcreature')
+
+    @staticmethod
+    def related_models() :
+        return [creature,tool]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Varelse har verktyg"
+
+class placeTool(MyLink) :
+    placetool = peewee.ForeignKeyField(tool, null=True, related_name='placetool')
+    toolplace = peewee.ForeignKeyField(place, null=True, related_name='toolplace')
+
+    @staticmethod
+    def related_models() :
+        return [place,tool]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Verktyg finns tillgängligt på plats"
+
+class personTool(MyLink) :
+    persontool = peewee.ForeignKeyField(tool, null=True, related_name='persontool')
+    toolperson = peewee.ForeignKeyField(person, null=True, related_name='toolperson')
+
+    @staticmethod
+    def related_models() :
+        return [person,tool]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Person har verktyg"
+
+class creatureTravelitem(MyLink) :
+    creaturetravelitem = peewee.ForeignKeyField(travelitem, null=True, related_name='creaturetravelitem')
+    travelitemcreature = peewee.ForeignKeyField(creature, null=True, related_name='travelitemcreature')
+
+    @staticmethod
+    def related_models() :
+        return [creature,travelitem]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Varelse har reseutrustning"
+
+class placeTravelitem(MyLink) :
+    placetravelitem = peewee.ForeignKeyField(travelitem, null=True, related_name='placetravelitem')
+    travelitemplace = peewee.ForeignKeyField(place, null=True, related_name='travelitemplace')
+
+    @staticmethod
+    def related_models() :
+        return [place,travelitem]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Reseutrustning finns tillgängligt på plats"
+
+class personTravelitem(MyLink) :
+    persontravelitem = peewee.ForeignKeyField(travelitem, null=True, related_name='persontravelitem')
+    travelitemperson = peewee.ForeignKeyField(person, null=True, related_name='travelitemperson')
+
+    @staticmethod
+    def related_models() :
+        return [person,travelitem]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Person har reseutrustning"

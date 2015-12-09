@@ -15,3 +15,9 @@ class JsonField(peewee.TextField) :
 
 class OptionField(peewee.TextField) :
     pass
+
+class UnitIntegerField(peewee.IntegerField) :
+
+    def __init__( self, **kwargs ) :
+        self.unit = kwargs.get('unit')
+        peewee.IntegerField.__init__(self,kwargs)

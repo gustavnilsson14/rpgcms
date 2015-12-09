@@ -1,13 +1,129 @@
 <!DOCTYPE html>
+{% set model = page_data.get('model') %}
 <html>
     <head>
         <meta charset="utf-8">
-        <title>HEJ</title>
-        <script type="text/javascript" src="../js/admin.js">
-
-        </script>
+        <title>{{ escape( model.display_name() ) }}</title>
+        <link rel="stylesheet" href="/css/article.css" charset="utf-8">
+        <link rel="stylesheet" href="/css/default.css" charset="utf-8">
+        <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript" src="../js/article.js"></script>
     </head>
     <body>
-        HERE WE HAVE CITIES
+        <h1>{{ escape( model.display_name(True) ) }}
+            {% if page_data.get('instances').count() == 1 %}
+                <a href="/article/{{ escape( model.__name__ ) }}">Visa alla</a>
+            {% end %}
+        </h1>
+        {% set loader = page_data.get('loader') %}
+        {% set instances = model.sort_list_by_key(page_data.get('instances'), 'region' ) %}
+        {% set regions_processed = [] %}
+        <div class="column">
+            {% for index, instance in enumerate( instances ) %}
+                {% if index == (len(instances)+1) / 2 %}
+                    </div>
+                    <div class="column">
+                {% end %}
+                {% block instance %}
+                    {% if instance.available_for_user( page_data.get( 'handler') ) == True %}
+                        {% if instance.region.name not in regions_processed %}
+                            <div class="clearfix"></div>
+                            <h2>Städer i {{ instance.region.name }}</h2>
+                            {% set regions_processed += [instance.region.name] %}
+                        {% end %}
+                        <div class="instance" name="{{ instance.name }}" posx="{{ instance.pos_x }}" posy="{{ instance.pos_y }}">
+
+                        <h2>{{ instance.name }}</h2>
+                        <p>{{ instance.description }}</p>
+                        <ul>
+                        {% for key, value in instance.fields(1).items() %}
+                            {% if key != 'id' and key != 'name' and key != 'description' and value != None %}
+                                {% if model.is_foreign(model,key) == False %}
+                                    {% set current_field = getattr( model, key ) %}
+                                    <li>
+                                    {{ escape( model.field_display_name( key ) ) }}: <span class="value">{{ value }}</span>
+                                    {% if current_field.__class__.__name__ == 'UnitIntegerField' %}
+                                        {% if current_field.unit != None %}
+                                            <span>{{ escape( current_field.unit ) }}</span>
+                                        {% end %}
+                                    {% end %}
+                                    </li>
+                                {% end %}
+                            {% end %}
+                        {% end %}
+
+
+                        {% for key, value in instance.fields(1).items() %}
+                            {% if key != 'id' and key != 'name' and key != 'description' and value != None %}
+                                {% if model.is_foreign(model,key) %}
+                                    {% set foreign = getattr( instance, key ) %}
+                                    <li>
+                                    {% if foreign.available_for_user( page_data.get( 'handler') ) == True %}
+                                        <a href="/article/{{ escape( key ) }}/{{ foreign.id }}">{{ escape(foreign.__class__.display_name(False)) }}</a>: {{ foreign.name }}
+                                    {% else %}
+                                        {{ escape(foreign.__class__.display_name(False)) }}: ?
+                                    {% end %}
+                                    </li>
+                                {% end %}
+                            {% end %}
+                        {% end %}
+                        </ul>
+
+                        {% for related in model.related_names() %}
+                            {% set related_instances = getattr(instance, related.get('reference')) %}
+                            {% if related_instances.count() > 0 %}
+                                <h3>{{ escape( related.get('model').display_name() ) }}</h3>
+                                <ul>
+                                {% for related_instance in related_instances %}
+                                    {% block related_instance %}
+                                        {% if related_instance.available_for_user( page_data.get( 'handler' ) ) == True %}
+                                        <li>
+                                            <a href="/article/{{ escape( related_instance.__class__.__name__ ) }}/{{ related_instance.id }}">
+                                            {{ escape( escape( related_instance.name[0].upper() + related_instance.name[1:]) ) }}
+                                            </a>
+                                        </li>
+                                        {% end %}
+                                    {% end %}
+                                {% end %}
+                                </ul>
+                            {% end %}
+                        {% end %}
+
+
+                        {% for link in page_data.get('links') %}
+                            {% set link_model = link.get_link_model( model ) %}
+                            {% if hasattr( instance, link_model.__name__ + model.__name__ ) %}
+                                {% set link_instances = getattr( instance, link_model.__name__ + model.__name__ ) %}
+                                {% if link_instances.count() > 0 %}
+                                    <h3>{{ link_model.display_name() }}</h3>
+                                    <ul>
+                                    {% for link_instance in link_instances %}
+                                        {% if hasattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                            {% set linked_model_instance = getattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                            {% if linked_model_instance.available_for_user( page_data.get( 'handler') ) == True %}
+                                            <li>
+                                                <a href="/article/{{ escape( linked_model_instance.__class__.__name__ ) }}/{{ linked_model_instance.id }}">{{ linked_model_instance.name }}</a>: {{ escape( link_instance.value ) }}
+                                            </li>
+                                            {% end %}
+                                        {% end %}
+                                    {% end %}
+                                    </ul>
+                                {% end %}
+                            {% end %}
+                        {% end %}
+                    {% end %}
+
+                    {% raw loader.load("public/templates/partials/comment.html").generate(partial_data={'model':model,'instance':instance}) %}
+                    <!-- END BLOCK INSTANCE -->
+                {% end %}
+                </div>
+            {% end %}
+        </div>
+        <div class="clearfix"></div>
+        <div class="map" data-model="city">
+            <div class="city current">
+                <img src="/img/map.png" />
+            </div>
+        </div>
     </body>
 </html>

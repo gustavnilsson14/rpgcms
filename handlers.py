@@ -53,7 +53,7 @@ class MyHandler(tornado.web.RequestHandler):
                     if link_value_definition[:2] != link_definition[:2] :
                         continue
                     if link.get('value') == link_value_definition[3] :
-                        value = link_value.get('value')
+                        value = self.get_argument( link_value.get('key') )
                 links[link_definition[1]]['references'] += [{
                     'model': link_definition[2],
                     'id': link.get('value'),
@@ -103,10 +103,19 @@ class ArticleHandler(MyHandler):
         else :
             instance = model.select().where(model.id == id)
             page_data['instances'] = instance
-        if os.path.isfile("public/templates/models/" + model.__name__) :
+        if os.path.isfile("public/templates/models/" + model.__name__ + '.html') :
             self.output("models/" + model.__name__, page_data)
             return
         self.output("models/default", page_data)
+
+    def post(self) :
+        if self.get_cookie('user') == None :
+            self.redirect('/')
+            return
+        model_name = self.get_argument('model')
+        model = self.database.get_model(model_name)
+
+
 
 class AdminHandler(MyHandler):
 
@@ -117,12 +126,18 @@ class AdminHandler(MyHandler):
     def post(self) :
         model_name = self.get_argument('model')
         model = self.database.get_model(model_name)
-
+        type = ''
         dict = {}
         for key in model._meta.get_field_names() :
-            value = self.get_argument(key)
+            value = ''
+            try:
+                value = self.get_argument(key)
+            except Exception:
+                pass
             if value != '':
                 dict[key] = value
+            if key == 'type' :
+                type = '&type=' + value
             if value == 'null':
                 dict[key] = None
         if dict.get('id') != None :
@@ -131,8 +146,8 @@ class AdminHandler(MyHandler):
             for key, value in dict.items() :
                 setattr(instance,key,value)
             instance.save()
-            for model_name, definition in self.compile_links().items() :
-                link_model = self.database.get_link(model_name)
+            for link_model_name, definition in self.compile_links().items() :
+                link_model = self.database.get_link(link_model_name)
                 target_model = link_model.get_link_model(model)
                 delete_stmt = 'DELETE FROM ' + link_model.__name__.lower() + ' WHERE ' + target_model.__name__ + definition.get('origin') + '_id = ' + instance.id
                 query = link_model.raw( delete_stmt )
@@ -144,7 +159,7 @@ class AdminHandler(MyHandler):
             for model, definition in self.compile_links().items() :
                 link_model = self.database.get_link(model)
                 self.save_links( instance, definition, link_model )
-        self.redirect('/admin?form-success=' + model_name)
+        self.redirect('/admin?form-success=' + model_name + type)
 
     def save_links( self, instance, definition, link_model ) :
         for reference in definition.get('references') :

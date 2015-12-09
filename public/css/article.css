@@ -1,0 +1,79 @@
+@font-face {
+  font-family: 'gothic_ultra_ot';
+  src: url('gothic_ultra_ot.otf');
+}
+body{
+    font-family: 'gothic_ultra_ot';
+    letter-spacing: 1px;
+    width:1200px;
+    margin: 0 auto;
+}
+h2,h3,h4,h5,p,ul{
+    margin: 0;
+}
+h1{
+    font-size: 36px;
+}
+h2{
+    font-size: 28px;
+}
+h3{
+    font-size: 24px;
+}
+p{
+    font-size: 20px;
+}
+div.column{
+    width: calc( 50% - 40px );
+    padding: 0 10px;
+    float: left;
+    display: inline-block;
+}
+div.instance{
+    width: 100%;
+    padding: 5px;
+    margin: 15px 0;
+}
+div.instance>h2{
+    margin-bottom:10px;
+}
+div.instance>p{
+    white-space: pre-line;
+}
+div.instance>ul{
+    list-style-type: none;
+    padding: 10px;
+}
+div.instance>ul>li{
+    font-size: 20px;
+    padding: 4px 0;
+}
+
+div.map{
+    position: relative;
+    background-image: url('/img/map.png');
+    background-repeat:no-repeat;
+    background-size: cover;
+    width: 1280px;
+    height: 700px;
+    width: 1920px;
+    height: 1080px;
+}
+div.map div.city{
+    margin-left: -5px;
+    margin-top: -5px;
+    position: absolute;
+}
+div.map div.city p{
+    font-weight:bold;
+    margin-left: -26px;
+    font-size: 18px;
+    margin-top: 0;
+    text-shadow: 1px 1px #444;
+}
+div.map div.city.current{
+    display: none;
+}
+div.map div.city p{
+    text-align: center;
+}

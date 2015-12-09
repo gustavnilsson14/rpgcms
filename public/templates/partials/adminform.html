@@ -16,6 +16,9 @@
         {% set title = "Editera " + instance.name %}
     {% end %}
     <h2>{{ escape( title ) }}</h3>
+    <span>
+        <input type="submit" value="Spara">
+    </span>
     <input type="hidden" name="model" value="{{ model.__name__ }}">
     {% for field in model._meta.get_sorted_fields() %}
         {% set element = model.get_element( field ) %}
@@ -24,13 +27,19 @@
             {% set field_value = "" %}
             {% if instance != 0 %}
                 {% set field_value = getattr( instance, element['key'] ) %}
+                {% if field_value == None %}
+                    {% set field_value = "" %}
+                {% end %}
             {% end %}
             {% if element['element'] == 'input' %}
-                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <label for="{{ escape(element['key']) }}">{{ model.field_display_name( element['key'] ) }}</label>
                 <input id="{{ escape(element['key']) }}" type="text" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" value="{{ escape( field_value ) }}">
             {% elif element['element'] == 'integer' %}
-                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <label for="{{ escape(element['key']) }}">{{ model.field_display_name( element['key'] ) }}</label>
                 <input id="{{ escape(element['key']) }}" type="number" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" value="{{ field_value }}">
+                {% if field[1].unit != None %}
+                    <span>{{ escape( field[1].unit ) }}</span>
+                {% end %}
             {% elif element['element'] == 'map' %}
                 <div class="map" data-model="{{ escape(type) }}">
                     <div class="city current">
@@ -41,7 +50,10 @@
             {% elif element['element'] == 'map_hidden' %}
                 <input id="{{ escape(element['key']) }}" type="hidden" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}" mapy value="{{ field_value }}">
             {% elif element['element'] == 'textarea' %}
-                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <label for="{{ escape(element['key']) }}">{{ model.field_display_name( element['key'] ) }}</label>
+                <textarea id="{{ escape(element['key']) }}" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}">{{ escape( field_value ) }}</textarea>
+            {% elif element['element'] == 'json' %}
+                <label for="{{ escape(element['key']) }}">{{ model.field_display_name( element['key'] ) }}</label>
                 <textarea id="{{ escape(element['key']) }}" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}">{{ escape( field_value ) }}</textarea>
             {% elif element['element'] == 'select' %}
                 {% set foreign_model = page_data.get('models')[element['key']] %}
@@ -61,11 +73,10 @@
                 {% end %}
                 </select>
             {% elif element['element'] == 'option' %}
-                <label for="{{ escape(element['key']) }}">{{ escape(element['key'][0].upper() + element['key'][1:]) }}</label>
+                <label for="{{ escape(element['key']) }}">{{ model.field_display_name( element['key'] ) }}</label>
                 <select id="{{ escape(element['key']) }}" name="{{ escape(element['key']) }}" data-model="{{ escape(type) }}">
                     {% set options = model.get_options(element['key']) %}
                     {% if model.typeof(options) == 'list' %}
-                        {% set t = model.printmestatic(options) %}
                         {% for option in options %}
                             {% set selected_option = "" %}
                             {% if field_value == option %}
@@ -74,7 +85,6 @@
                             <option value="{{ escape(option) }}" {{ escape( selected_option ) }}>{{ escape(option) }}</option>
                         {% end %}
                     {% elif model.typeof(options) == 'dict' %}
-                        {% set t = model.printmestatic(options) %}
                         {% for option_category, option_list in options.items() %}
                             <optgroup label="{{ escape( option_category ) }}">
                                 {% for option in option_list %}
@@ -117,7 +127,7 @@
                                                 {% if option_instance.id in selected_links %}
                                                     {% set selected_option = "selected" %}
                                                 {% end %}
-                                                <option value="{{option_instance.fields(1).get('id') }}" {{ escape( selected_option ) }}>{{ escape(option_instance.fields(1).get('name')) }}</option>
+                                                <option value="{{ option_instance.fields(1).get('id') }}" {{ escape( selected_option ) }}>{{ escape(option_instance.fields(1).get('name')) }}</option>
                                             {% end %}
                                         {% end %}
                                     {% end %}
@@ -126,11 +136,22 @@
                         </select>
                     </div>
                     <div class="link-values">
-
+                    {% if instance != 0 %}
+                        {% for link_instance in page_data.get('content_links').get(link.__name__) %}
+                            {% block link_instance %}
+                                {% if getattr(link_instance,link_model.__name__+model.__name__).id == instance.id %}
+                                    {% set foreign_link_instance = getattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                    <div class="fieldbox" name="{{ foreign_link_instance.id }}">
+                                        <label>Värde för {{ escape( foreign_link_instance.name ) }}</label>
+                                        <input type="text" name="link--{{ escape( link_instance.__class__.__name__ ) }}--{{ escape( foreign_link_instance.__class__.__name__ ) }}--{{ foreign_link_instance.id }}--value" value="{{ escape( link_instance.value ) }}">
+                                    </div>
+                                {% end %}
+                            {% end %}
+                        {% end %}
+                    {% end %}
                     </div>
                 </div>
             {% end %}
         {% end %}
     {% end %}
-    <input type="submit" value="Submit">
 </form>

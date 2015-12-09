@@ -1,8 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import peewee
 from customfields import *
 from peewee import *
 from playhouse.migrate import *
 from playhouse.shortcuts import model_to_dict
+import operator
+import inspect
 
 db = MySQLDatabase('rpg', user='rpg', passwd='rpggpr')
 migrator = MySQLMigrator(db)
@@ -45,7 +50,7 @@ class MyPeeweeModel(peewee.Model):
             element['related_name'] = field[1].related_name
         elif type(field[1]) is OptionField :
             element['element'] = 'option'
-        elif type(field[1]) is peewee.IntegerField :
+        elif type(field[1]) is peewee.IntegerField or type(field[1]) is UnitIntegerField :
             element['element'] = 'integer'
         elif type(field[1]) is JsonField :
             element['element'] = 'json'
@@ -75,17 +80,65 @@ class MyPeeweeModel(peewee.Model):
     def typeof(object = None) :
         return type(object).__name__
 
+    @staticmethod
+    def sort_list_by_key( instances, key ) :
+        instance_list = []
+        key_is_id = False
+        key_type = type( getattr( instances[0],key ) )
+        if inspect.isclass( key_type ) :
+            key_is_id = True
+        for instance in instances:
+            instance_list += [instance]
+        if key_is_id :
+            instance_list.sort(key = operator.attrgetter(key + '.id'))
+        else :
+            instance_list.sort(key = operator.attrgetter(key))
+        return instance_list
+
     def printme(self, s = "") :
         if s != "" :
             print s
             return
         print self.__dict__
 
+
     class Meta:
         database = db
 
-class MyModel(MyPeeweeModel):
+class IMyModel(MyPeeweeModel):
+    @staticmethod
+    def is_link() :
+        return False
 
+    @staticmethod
+    def show_links() :
+        return True
+
+    @staticmethod
+    def compare_selected(field_value, option) :
+        return False
+
+    @staticmethod
+    def field_display_name(field_name) :
+        return False
+
+    @classmethod
+    def filter_link_instance_by_type(cls, instance) :
+        return False
+
+    def get_links( self, link_model ) :
+        return False
+
+    def parse_related_links( self, model, link_model, link_list ) :
+        return False
+
+    def show_for_class( self, cls ) :
+        return False
+
+    def available_for_user( self, handler ) :
+        return False
+
+class MyModel(IMyModel):
     id = peewee.PrimaryKeyField()
     name = peewee.TextField()
     description = TextAreaField()
@@ -116,6 +169,8 @@ class MyModel(MyPeeweeModel):
             return 'Longitud'
         if field_name == 'pos_y':
             return 'Latitud'
+        if field_name == 'difficulty' :
+            return 'Svårighetsgrad'
         return field_name[0].upper() + field_name[1:]
 
     @classmethod
@@ -145,9 +200,13 @@ class MyModel(MyPeeweeModel):
 
     def available_for_user( self, handler ) :
         user = handler.current_user
+        if user.name == 'SL' :
+            return True
         if hasattr( self, "knowledge" + self.__class__.__name__ ) == False:
             return True
         required_knowledge = getattr( self, "knowledge" + self.__class__.__name__ )
+        if required_knowledge.count() == 0 :
+            return True
         if hasattr( user, "knowledgeuser" ) == False :
             return False
         user_knowledge = getattr( user, "knowledgeuser" )
@@ -182,7 +241,7 @@ class MyLink(MyPeeweeModel):
 class user(MyModel) :
 
     player = peewee.TextField()
-    json = JsonField()
+    json = JsonField(null=True)
 
     @staticmethod
     def display_name(plural=True) :
@@ -192,7 +251,35 @@ class user(MyModel) :
 
     @staticmethod
     def field_display_name(field_name) :
-        print field_name
         if field_name == 'player' :
             return 'Spelare'
         return MyModel.field_display_name(field_name)
+
+class comment(IMyModel) :
+
+    id = peewee.PrimaryKeyField()
+    comment = peewee.TextField()
+    user = peewee.ForeignKeyField(user, related_name='comments')
+    table = OptionField()
+    foreign = UnitIntegerField()
+
+    @staticmethod
+    def display_name(plural=True) :
+        if plural :
+            return "Kommentarer"
+        return "Kommentar"
+
+    @staticmethod
+    def field_display_name(field_name) :
+        if field_name == 'comment' :
+            return 'Kommentar'
+        return MyModel.field_display_name(field_name)
+
+    @staticmethod
+    def get_options(field_name) :
+        if field_name == 'table' :
+            tables = []
+            for model in MyModel.rpgdb.models:
+                tables += [model.__name__]
+            return tables
+        return []

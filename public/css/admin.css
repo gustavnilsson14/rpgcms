@@ -1,3 +1,6 @@
+body{
+    display: none;
+}
 div.map{
     position: relative;
     background-image: url('/img/map.png');
@@ -9,9 +12,16 @@ div.map{
     height: 1080px;
 }
 div.map div.city{
-    margin-left: -16px;
-    margin-top: -24px;
+    margin-left: -5px;
+    margin-top: -5px;
     position: absolute;
+}
+div.map div.city p{
+    font-weight:bold;
+    margin-left: -26px;
+    font-size: 18px;
+    margin-top: 0;
+    text-shadow: 1px 1px #444;
 }
 div.map div.city.current{
     display: none;
@@ -37,8 +47,15 @@ form select,{
     float: right;
 }
 form textarea{
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+    padding: 1px;
+    width: 169px;
+    height: 19px;
+}
+textarea:focus{
     width: calc(100% - 210px);
-    height: 100px;
+    height: 200px;
 }
 form label{
     width: 200px;
@@ -48,8 +65,13 @@ form div.fieldbox{
     margin-bottom: 30px;
 }
 form .select2-container{
-    width: auto!important;
+    width: 380px!important;
 }
 form .select2-search__field{
-    width: 280px!important;
+    width: 380px!important;
+}
+form h2{
+    margin-left: 0;
+    margin-right: 50px;
+    display: inline-block;
 }

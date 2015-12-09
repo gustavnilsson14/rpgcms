@@ -7,27 +7,36 @@ import sys, inspect
 
 class RpgDatabase :
     def __init__(self) :
-        self.models = []
         self.links = []
         self.models = [
             continent,
             region,
             city,
             place,
+            bloodline,
             person,
-            itemtype,
-            itemsubtype,
-            item,
+            magictype,
             magic,
             spell,
             legend,
+            creaturetype,
             creature,
+            itemtype,
+            weapon,
+            armor,
+            tool,
+            travelitem,
+            mount,
+            alchemy,
             vegetation,
             ingredient,
             stat,
             knowledge,
-            user
+            user,
+            comment,
+            combatskill
         ]
+        MyModel.rpgdb = self
         for name, obj in inspect.getmembers(sys.modules['links']):
             if inspect.isclass(obj):
                 if issubclass(obj, MyLink) and obj != MyLink:
