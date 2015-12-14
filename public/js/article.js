@@ -19,7 +19,8 @@ $(document).ready(function(){
             $( city ).css( 'top', posY + 'px' );
             $('div.map').append( city );
         } );
-        $('div.map').css('zoom', 0.5).click(function(e) {
+        $('div.map').css('zoom', 0.5);
+        $('div.map:not(.no-edit)').click(function(e) {
             $(this).css('zoom', 1);
             var posX = Math.round( e.pageX - $(this).offset().left ) * 2;
             var posY = Math.round( e.pageY - $(this).offset().top ) * 2;

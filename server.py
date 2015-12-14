@@ -19,6 +19,7 @@ if len( sys.argv ) <= 1 :
 
 if __name__ == "__main__":
     database = RpgDatabase()
+    port = 1337
     public_root = os.path.join(os.path.dirname(__file__), 'public')
     application = tornado.web.Application([
         (r"/", PublicHandler, dict(database=database)),
@@ -29,7 +30,7 @@ if __name__ == "__main__":
         (r"/user", UserHandler, dict(database=database)),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': public_root}),
     ])
-    application.listen(8888)
+    application.listen(port)
 
     tornado.autoreload.start()
     tornado.autoreload.watch("handlers.py")

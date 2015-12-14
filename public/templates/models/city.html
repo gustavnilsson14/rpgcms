@@ -6,8 +6,8 @@
         <title>{{ escape( model.display_name() ) }}</title>
         <link rel="stylesheet" href="/css/article.css" charset="utf-8">
         <link rel="stylesheet" href="/css/default.css" charset="utf-8">
-        <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
-        <script type="text/javascript" src="../js/article.js"></script>
+        <script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script>
+        <script type="text/javascript" src="/js/article.js"></script>
     </head>
     <body>
         <h1>{{ escape( model.display_name(True) ) }}
@@ -72,20 +72,22 @@
                         {% for related in model.related_names() %}
                             {% set related_instances = getattr(instance, related.get('reference')) %}
                             {% if related_instances.count() > 0 %}
-                                <h3>{{ escape( related.get('model').display_name() ) }}</h3>
-                                <ul>
-                                {% for related_instance in related_instances %}
-                                    {% block related_instance %}
-                                        {% if related_instance.available_for_user( page_data.get( 'handler' ) ) == True %}
-                                        <li>
-                                            <a href="/article/{{ escape( related_instance.__class__.__name__ ) }}/{{ related_instance.id }}">
-                                            {{ escape( escape( related_instance.name[0].upper() + related_instance.name[1:]) ) }}
-                                            </a>
-                                        </li>
+                                <div class="link-type">
+                                    <h3>{{ escape( related.get('model').display_name() ) }}</h3>
+                                    <ul>
+                                    {% for related_instance in related_instances %}
+                                        {% block related_instance %}
+                                            {% if related_instance.available_for_user( page_data.get( 'handler' ) ) == True %}
+                                            <li>
+                                                <a href="/article/{{ escape( related_instance.__class__.__name__ ) }}/{{ related_instance.id }}">
+                                                {{ escape( escape( related_instance.name[0].upper() + related_instance.name[1:]) ) }}
+                                                </a>
+                                            </li>
+                                            {% end %}
                                         {% end %}
                                     {% end %}
-                                {% end %}
-                                </ul>
+                                    </ul>
+                                </div>
                             {% end %}
                         {% end %}
 
@@ -95,22 +97,28 @@
                             {% if hasattr( instance, link_model.__name__ + model.__name__ ) %}
                                 {% set link_instances = getattr( instance, link_model.__name__ + model.__name__ ) %}
                                 {% if link_instances.count() > 0 %}
-                                    <h3>{{ link_model.display_name() }}</h3>
-                                    <ul>
-                                    {% for link_instance in link_instances %}
-                                        {% if hasattr( link_instance, model.__name__ + link_model.__name__ ) %}
-                                            {% set linked_model_instance = getattr( link_instance, model.__name__ + link_model.__name__ ) %}
-                                            {% if linked_model_instance.available_for_user( page_data.get( 'handler') ) == True %}
-                                            <li>
-                                                <a href="/article/{{ escape( linked_model_instance.__class__.__name__ ) }}/{{ linked_model_instance.id }}">{{ linked_model_instance.name }}</a>: {{ escape( link_instance.value ) }}
-                                            </li>
+                                    <div class="link-type">
+                                        <h3>{{ link_model.display_name() }}</h3>
+                                        <ul>
+                                        {% for link_instance in link_instances %}
+                                            {% if hasattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                                {% set linked_model_instance = getattr( link_instance, model.__name__ + link_model.__name__ ) %}
+                                                {% if linked_model_instance.available_for_user( page_data.get( 'handler') ) == True %}
+                                                <li>
+                                                    <a href="/article/{{ escape( linked_model_instance.__class__.__name__ ) }}/{{ linked_model_instance.id }}">{{ linked_model_instance.name }}</a>
+                                                    {% if link_instance.value != "" %}
+                                                        <span>: {{ escape( link_instance.value ) }}</span>
+                                                    {% end %}
+                                                </li>
+                                                {% end %}
                                             {% end %}
                                         {% end %}
-                                    {% end %}
-                                    </ul>
+                                        </ul>
+                                    </div>
                                 {% end %}
                             {% end %}
                         {% end %}
+                        <div class="clearfix"></div>
                     {% end %}
 
                     {% raw loader.load("public/templates/partials/comment.html").generate(partial_data={'model':model,'instance':instance}) %}
@@ -120,7 +128,7 @@
             {% end %}
         </div>
         <div class="clearfix"></div>
-        <div class="map" data-model="city">
+        <div class="map no-edit" data-model="city">
             <div class="city current">
                 <img src="/img/map.png" />
             </div>

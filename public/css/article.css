@@ -7,24 +7,32 @@ body{
     letter-spacing: 1px;
     width:1200px;
     margin: 0 auto;
+    padding: 0 10px;
 }
-h2,h3,h4,h5,p,ul{
+h2,h3,h4,h5,p,ul,a,span{
     margin: 0;
 }
 h1{
-    font-size: 36px;
+    font-size: 46px;
 }
 h2{
-    font-size: 28px;
+    font-size: 30px;
 }
 h3{
-    font-size: 24px;
+    font-size: 38px;
 }
-p{
-    font-size: 20px;
+p, a, span{
+    font-size: 30px;
+}
+a{
+    font-size: 30px;
+}
+a{
+    padding: 10px 0;
+    display: inline-block;
 }
 div.column{
-    width: calc( 50% - 40px );
+    width: calc( 100% - 40px );
     padding: 0 10px;
     float: left;
     display: inline-block;
@@ -40,13 +48,16 @@ div.instance>h2{
 div.instance>p{
     white-space: pre-line;
 }
-div.instance>ul{
+div.instance ul{
     list-style-type: none;
     padding: 10px;
 }
-div.instance>ul>li{
-    font-size: 20px;
+div.instance ul>li{
     padding: 4px 0;
+}
+div.instance .link-type{
+    float: left;
+    padding: 10px;
 }
 
 div.map{
@@ -67,13 +78,43 @@ div.map div.city{
 div.map div.city p{
     font-weight:bold;
     margin-left: -26px;
-    font-size: 18px;
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0px;
+    font-family: helvetica;
     margin-top: 0;
-    text-shadow: 1px 1px #444;
+    text-shadow: 1px 1px #CCC;
 }
 div.map div.city.current{
     display: none;
 }
 div.map div.city p{
     text-align: center;
+}
+@media screen and (min-width: 1200px) {
+    h2,h3,h4,h5,p,ul{
+        margin: 0;
+    }
+    h1{
+        font-size: 36px;
+    }
+    h2{
+        font-size: 28px;
+    }
+    h3{
+        font-size: 24px;
+    }
+    p,a,span{
+        font-size: 20px;
+    }
+    a{
+        padding: 0;
+        display: inline-block;
+    }
+    div.column{
+        width: calc( 50% - 40px );
+        padding: 0 10px;
+        float: left;
+        display: inline-block;
+    }
 }
