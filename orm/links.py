@@ -271,7 +271,7 @@ class alchemyKnowledge(MyLink) :
         return cls.related_models()[0].display_name(False) + " har kunskapen"
 
 
-#weapon LINKS
+#item LINKS
 class creatureWeapon(MyLink) :
     creatureweapon = peewee.ForeignKeyField(weapon, null=True, related_name='creatureweapon')
     weaponcreature = peewee.ForeignKeyField(creature, null=True, related_name='weaponcreature')
@@ -415,3 +415,16 @@ class personTravelitem(MyLink) :
     @staticmethod
     def display_name(plural=True) :
         return "Person har reseutrustning"
+
+#Damagetype LINKS
+class armorDamagetype(MyLink) :
+    damagetypearmor = peewee.ForeignKeyField(armor, null=True, related_name='damagetypearmor')
+    armordamagetype = peewee.ForeignKeyField(damagetype, null=True, related_name='armordamagetype')
+
+    @staticmethod
+    def related_models() :
+        return [damagetype,armor]
+
+    @staticmethod
+    def display_name(plural=True) :
+        return "Rustning reducerar skadan från"

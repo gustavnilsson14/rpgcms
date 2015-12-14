@@ -14,6 +14,7 @@ class RpgDatabase :
             city,
             place,
             bloodline,
+            damagetype,
             person,
             magictype,
             magic,

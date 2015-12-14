@@ -125,6 +125,21 @@ class bloodline(MyModel):
             return "Ãtter"
         return "Ãtt"
 
+class damagetype(MyModel):
+
+    @staticmethod
+    def display_name(plural=True) :
+        if plural :
+            return "Skadetyper"
+        return "Skadetyp"
+
+    @staticmethod
+    def related_names() :
+        return [{
+            'model': weapon,
+            'reference':'weapons'
+        }]
+
 class person(MyModel):
     profession = OptionField()
     city = ForeignKeyField(city, null=True, related_name='persons')
@@ -349,6 +364,7 @@ class Item(MyModel):
 class weapon(Item):
 
     damage = UnitIntegerField()
+    damagetype = peewee.ForeignKeyField(damagetype, null=True, related_name='weapons')
     durability = UnitIntegerField()
     penetration = UnitIntegerField()
     hit = UnitIntegerField()
@@ -390,7 +406,6 @@ class weapon(Item):
 
 class armor(Item):
 
-    damagereduction = UnitIntegerField()
     armorvalue = UnitIntegerField()
     staminareduction = UnitIntegerField()
     speedreduction = UnitIntegerField()
@@ -404,9 +419,7 @@ class armor(Item):
 
     @staticmethod
     def field_display_name(field_name) :
-        if field_name == 'damagereduction' :
-            return 'Skadereducering'
-        elif field_name == 'armorvalue' :
+        if field_name == 'armorvalue' :
             return 'Pansarvärde'
         elif field_name == 'staminareduction' :
             return 'Uthållighetsreduktion'
